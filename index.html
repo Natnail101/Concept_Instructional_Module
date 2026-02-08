@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Evaluating Images & Alt Text</title>
+  <link rel="stylesheet" href="./styles.css?v=200" />
+</head>
+
+<body>
+  <a class="skip-link" href="#screenHost">Skip to lesson content</a>
+
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">A11Y</div>
+      <div class="brand-text">
+        <div class="title">Evaluating Images and Alt Text</div>
+        <div class="subtitle">Programmed tutorial (use-level concept)</div>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="chip-link" href="principles-summary.html" target="_blank" rel="noreferrer">Principles Summary</a>
+      <button class="btn btn-ghost" id="restartBtn" type="button">Restart</button>
+    </div>
+  </header>
+
+  <main class="container" role="main">
+    <section class="card" aria-label="Tutorial module">
+      <div class="meta">
+        <div class="meta-left">
+          <div class="pill" id="screenLabel">Screen 1</div>
+          <div class="rule muted" id="ruleLine">
+            Decision rule: An image is accessible only if the alt text communicates the image’s <b>purpose</b>.
+          </div>
+        </div>
+        <div class="meta-right">
+          <div class="muted" id="progressText">1 / 1</div>
+        </div>
+      </div>
+
+      <div class="progress" aria-label="Progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div class="content" id="screenHost" aria-live="polite" aria-atomic="true"></div>
+      <div id="liveFeedback" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+      <div class="footer">
+        <button class="btn btn-ghost" id="backBtn" type="button">Back</button>
+
+        <div class="footer-right">
+          <button class="btn btn-ghost" id="whyBtn" type="button" disabled>Show me why</button>
+          <button class="btn btn-primary" id="nextBtn" type="button">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card-lite" aria-label="Quick guide">
+      <div class="mini-grid">
+        <div class="mini-item">
+          <div class="mini-title">What to look for</div>
+          <div class="mini-text">Purpose, action, or context (not just a label).</div>
+        </div>
+        <div class="mini-item">
+          <div class="mini-title">Common wrong alt text</div>
+          <div class="mini-text">One-word labels like “woman”, “bridge”, “ocean”.</div>
+        </div>
+        <div class="mini-item">
+          <div class="mini-title">Keyboard</div>
+          <div class="mini-text"><span class="kbd">Enter</span> Next · <span class="kbd">Shift</span> + <span class="kbd">Enter</span> Back · <span class="kbd">Esc</span> Close modal</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="modal" id="whyModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="whyTitle" tabindex="-1">
+        <div class="modal-head">
+          <div class="modal-title" id="whyTitle">Why this is right / wrong</div>
+          <button class="btn btn-ghost" id="closeWhyBtn" type="button">Close</button>
+        </div>
+        <div class="modal-body" id="whyBody"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="./script.js?v=200"></script>
+</body>
+</html>
