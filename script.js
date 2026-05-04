@@ -193,13 +193,15 @@ function analyzeAltText(alt) {
   const genericWords = [
     "image","photo","picture","woman","women","man","person","market",
     "ocean","water","bridge","star","family","recipe","chart","trading",
-    "basketball game"
+    "basketball game","car","movie","lion","graph","food","teacher",
+    "people","computers","diagram"
   ];
+
   const containsGeneric = genericWords.includes(a);
   const hasFileLike = a.includes(".png") || a.includes(".jpg") || a.includes("img_") || a.includes("screen");
 
   const hasActionOrContext =
-    /(playing|walking|running|meeting|reading|holding|wearing|jumping|surfing|waiting|showing|infographic|visualization|map|chart|graph|report|at|in|on|with|during|behind|across|indoors|table|grass|window|background|platform|region|continents|by|teacher|students|classroom|recipe|instructions|bridge closed|flooding|server|data center|revenue|presentation|financial|trading|trend|technical|basketball|movement|arrows|destinations)/.test(a);
+    /(playing|walking|running|meeting|reading|holding|wearing|jumping|surfing|waiting|showing|infographic|visualization|map|chart|graph|report|at|in|on|with|during|behind|across|indoors|table|grass|window|background|platform|region|continents|by|teacher|students|classroom|recipe|instructions|bridge closed|flooding|server|data center|revenue|presentation|financial|trading|trend|technical|basketball|movement|arrows|destinations|electric|vehicle|battery|motor|audience|watching|movie|theater|museum|exhibit|technician|monitoring|components|diagram|bar chart|ranking|steps|warning|closed)/.test(a);
 
   return { tooShort, containsGeneric, hasFileLike, purposeSignals: hasActionOrContext };
 }
@@ -215,7 +217,7 @@ function buildWhyHTML(item, isCorrect, learnerChoiceLabel) {
 
   const riskLine = (f.containsGeneric || f.tooShort || f.hasFileLike)
     ? `<div><span class="warn">Common problem</span><div class="muted">Too short, generic, or file-like. That usually fails because it leaves out meaning.</div></div>`
-    : `<div><span class="ok">No “vague label” signs</span><div class="muted">This does not look like a one-word label or file name.</div></div>`;
+    : `<div><span class="ok">No vague-label signs</span><div class="muted">This does not look like a one-word label or file name.</div></div>`;
 
   const purposeSupport = item.expectedPurpose
     ? `<div><span class="warn">Image purpose</span><div class="muted">${escapeHtml(item.expectedPurpose)}</div></div>`
@@ -269,7 +271,7 @@ function buildDefinitionWhy(isCorrect, learnerChoiceLabel) {
       <div class="kv">
         <div>
           <div class="ok">What counts as correct</div>
-          <div class="muted">“Alt text communicates the image’s purpose.”</div>
+          <div class="muted">Alt text communicates the image’s purpose.</div>
         </div>
         <div>
           <div class="warn">What is usually wrong</div>
@@ -416,6 +418,33 @@ function contentScreen(id, html) {
   return { id, type: "content", render: () => html };
 }
 
+function exampleScreen(item) {
+  return {
+    id: item.id,
+    type: "content",
+    render: () => `
+      <h2>${item.title}</h2>
+      <p class="muted">${item.prompt}</p>
+
+      ${imageBlock(item)}
+
+      <div class="compare-grid">
+        <div class="good-box">
+          <h3>Good example</h3>
+          <div class="code">alt="${escapeHtml(item.goodAlt)}"</div>
+          <p class="muted">${escapeHtml(item.goodReason)}</p>
+        </div>
+
+        <div class="bad-box">
+          <h3>Bad example</h3>
+          <div class="code">alt="${escapeHtml(item.badAlt)}"</div>
+          <p class="muted">${escapeHtml(item.badReason)}</p>
+        </div>
+      </div>
+    `
+  };
+}
+
 function practiceScreen(item) {
   return {
     id: item.id,
@@ -508,6 +537,32 @@ const screens = [
     </div>
   `),
 
+  exampleScreen({
+    id: "example-1",
+    title: "Example 1: Good alt text communicates purpose",
+    prompt: "This example shows how strong alt text explains the image’s action, setting, and instructional purpose.",
+    image: "image/classroom.png",
+    caption: "Image scenario: a teacher presents a science lesson about water to students.",
+    altText: "Teacher presenting a lesson about water to students in a classroom",
+    goodAlt: "Teacher presenting a lesson about water to students in a classroom",
+    goodReason: "This is strong because it explains the action, setting, and purpose of the image.",
+    badAlt: "teacher",
+    badReason: "This is weak because it only names a person and does not explain the lesson or classroom context."
+  }),
+
+  exampleScreen({
+    id: "example-2",
+    title: "Example 2: Bad alt text misses the purpose",
+    prompt: "This example shows why one-word labels are usually not enough.",
+    image: "image/bridgeflood.png",
+    caption: "Image scenario: a bridge is closed because of flooding.",
+    altText: "bridge",
+    goodAlt: "Bridge closed because of flooding, with warning signs blocking the road",
+    goodReason: "This is strong because it communicates the warning and closure message.",
+    badAlt: "bridge",
+    badReason: "This is weak because it only labels the object and misses the important safety meaning."
+  }),
+
   practiceScreen({
     id: "practice-1",
     title: "Practice (Remember): definition check",
@@ -515,7 +570,7 @@ const screens = [
     altText: "N/A",
     choices: [
       { id: "a", label: "Alt text communicates the image’s purpose", correct: true },
-      { id: "b", label: "Alt text is a short label like “image” or “photo”", correct: false }
+      { id: "b", label: "Alt text is a short label like image or photo", correct: false }
     ]
   }),
 
@@ -541,40 +596,6 @@ const screens = [
     helpMode: "diagnostic",
     title: "Practice (Use): apply the rule",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/bridgeflood.png",
-    caption: "Image scenario: a bridge is closed because of flooding.",
-    altText: "bridge",
-    visualFocus: "The image shows a bridge blocked by signs and surrounded by flood water.",
-    expectedPurpose: "The image warns the user that the bridge is closed because of flooding.",
-    betterAlt: "Bridge closed because of flooding, with warning signs blocking the road",
-    choices: [
-      { id: "accessible", label: "Accessible", correct: false },
-      { id: "inaccessible", label: "Inaccessible", correct: true }
-    ]
-  }),
-
-  practiceScreen({
-    id: "practice-4",
-    helpMode: "self",
-    title: "Practice (Use): apply the rule",
-    prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/goldenretriver.png",
-    caption: "Image scenario: a golden retriever is carrying a ball across grass.",
-    altText: "A golden retriever puppy playing with a ball on the grass",
-    visualFocus: "The dog is carrying or playing with a ball on grass.",
-    expectedPurpose: "The image communicates the dog’s action and setting.",
-    betterAlt: "Golden retriever carrying a ball across the grass",
-    choices: [
-      { id: "accessible", label: "Accessible", correct: true },
-      { id: "inaccessible", label: "Inaccessible", correct: false }
-    ]
-  }),
-
-  practiceScreen({
-    id: "practice-5",
-    helpMode: "diagnostic",
-    title: "Practice (Use): apply the rule",
-    prompt: "Look at the image and alt text. Accessible or inaccessible?",
     image: "image/cookinginstr.png",
     caption: "Image scenario: a veggie ramen recipe card shows ingredients and cooking steps.",
     altText: "recipe",
@@ -588,15 +609,48 @@ const screens = [
   }),
 
   practiceScreen({
+    id: "practice-4",
+    helpMode: "self",
+    title: "Practice (Use): apply the rule",
+    prompt: "Look at the image and alt text. Accessible or inaccessible?",
+    image: "image/datacenter.png",
+    caption: "Image scenario: a worker uses a tablet while checking server racks.",
+    altText: "Technician checking server racks with a tablet in a data center",
+    visualFocus: "A person is checking equipment in a server room.",
+    expectedPurpose: "The image communicates data center monitoring work.",
+    choices: [
+      { id: "accessible", label: "Accessible", correct: true },
+      { id: "inaccessible", label: "Inaccessible", correct: false }
+    ]
+  }),
+
+  practiceScreen({
+    id: "practice-5",
+    helpMode: "diagnostic",
+    title: "Practice (Use): apply the rule",
+    prompt: "Look at the image and alt text. Accessible or inaccessible?",
+    image: "image/electric_cars.png",
+    caption: "Image scenario: a diagram labels the main parts of an all-electric vehicle.",
+    altText: "car",
+    visualFocus: "The image labels electric vehicle components such as the battery, motor, charger, and converter.",
+    expectedPurpose: "The image explains the parts of an electric vehicle, not just that it is a car.",
+    betterAlt: "Diagram labeling the battery, motor, charger, and other parts of an all-electric vehicle",
+    choices: [
+      { id: "accessible", label: "Accessible", correct: false },
+      { id: "inaccessible", label: "Inaccessible", correct: true }
+    ]
+  }),
+
+  practiceScreen({
     id: "practice-6",
     helpMode: "self",
     title: "Practice (Use): apply the rule",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/classroom.png",
-    caption: "Image scenario: a teacher presents a science lesson about water to students.",
-    altText: "Teacher presenting a lesson about water to students in a classroom",
-    visualFocus: "The teacher is presenting a water lesson while students watch.",
-    expectedPurpose: "The image communicates a classroom teaching activity.",
+    image: "image/destination.png",
+    caption: "Image scenario: a chart compares domestic and international bucket list destinations.",
+    altText: "Chart comparing top domestic and international bucket list destinations",
+    visualFocus: "The chart compares travel destination rankings.",
+    expectedPurpose: "The image summarizes top domestic and international bucket list destinations.",
     choices: [
       { id: "accessible", label: "Accessible", correct: true },
       { id: "inaccessible", label: "Inaccessible", correct: false }
@@ -608,14 +662,31 @@ const screens = [
     helpMode: "self",
     title: "Practice (Use): apply the rule",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/techearningbymin.png",
-    caption: "Image scenario: a bar chart compares revenue per minute for major tech companies.",
-    altText: "Chart showing revenue per minute of major tech companies",
-    visualFocus: "The chart compares revenue per minute across companies.",
-    expectedPurpose: "The image summarizes a data comparison.",
+    image: "image/finance_presentation.png",
+    caption: "Image scenario: a presenter explains financial data to a group.",
+    altText: "Presenter explaining financial data to a team",
+    visualFocus: "A presenter points toward financial data on a display.",
+    expectedPurpose: "The image communicates a finance presentation.",
     choices: [
       { id: "accessible", label: "Accessible", correct: true },
       { id: "inaccessible", label: "Inaccessible", correct: false }
+    ]
+  }),
+
+  practiceScreen({
+    id: "practice-8",
+    helpMode: "diagnostic",
+    title: "Practice (Use): apply the rule",
+    prompt: "Look at the image and alt text. Accessible or inaccessible?",
+    image: "image/movietheater.png",
+    caption: "Image scenario: an audience watches an animated movie in a theater.",
+    altText: "movie",
+    visualFocus: "The image shows an audience watching an animated movie on a large theater screen.",
+    expectedPurpose: "The image communicates the theater viewing experience, not just the word movie.",
+    betterAlt: "Audience watching an animated movie on a large screen in a theater",
+    choices: [
+      { id: "accessible", label: "Accessible", correct: false },
+      { id: "inaccessible", label: "Inaccessible", correct: true }
     ]
   }),
 
@@ -635,7 +706,7 @@ const screens = [
     altText: "N/A",
     choices: [
       { id: "a", label: "Alt text communicates the image’s purpose", correct: true },
-      { id: "b", label: "Alt text is a short label like “image”", correct: false }
+      { id: "b", label: "Alt text is a short label like image", correct: false }
     ]
   }),
 
@@ -643,12 +714,12 @@ const screens = [
     id: "test-2",
     title: "Test 2 (Use)",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/nba.png",
-    caption: "Image scenario: a basketball play diagram uses arrows to show player movement.",
-    altText: "basketball game",
-    visualFocus: "The image shows arrows explaining player movement on a basketball court.",
-    expectedPurpose: "The image explains movement and positioning, not just that a game is happening.",
-    betterAlt: "Basketball play diagram showing player movement arrows on the court",
+    image: "image/muesum.png",
+    caption: "Image scenario: children interact with a museum exhibit of a large animal display.",
+    altText: "lion",
+    visualFocus: "The image shows children interacting with a large animal exhibit in a museum.",
+    expectedPurpose: "The image communicates the museum interaction, not just the animal.",
+    betterAlt: "Children interacting with a large animal exhibit in a museum",
     choices: [
       { id: "accessible", label: "Accessible", correct: false },
       { id: "inaccessible", label: "Inaccessible", correct: true }
@@ -659,11 +730,11 @@ const screens = [
     id: "test-3",
     title: "Test 3 (Use)",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/datacenter.png",
-    caption: "Image scenario: a worker uses a tablet while checking server racks.",
-    altText: "Technician checking server racks with a tablet in a data center",
-    visualFocus: "A person is checking equipment in a server room.",
-    expectedPurpose: "The image communicates data center monitoring work.",
+    image: "image/nba.png",
+    caption: "Image scenario: a basketball play diagram uses arrows to show player movement.",
+    altText: "Basketball play diagram showing player movement arrows on the court",
+    visualFocus: "The image shows arrows explaining player movement on a basketball court.",
+    expectedPurpose: "The image explains movement and positioning.",
     choices: [
       { id: "accessible", label: "Accessible", correct: true },
       { id: "inaccessible", label: "Inaccessible", correct: false }
@@ -674,12 +745,12 @@ const screens = [
     id: "test-4",
     title: "Test 4 (Use)",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/destination.png",
-    caption: "Image scenario: a chart compares domestic and international bucket list destinations.",
-    altText: "chart",
-    visualFocus: "The chart compares travel destination rankings.",
-    expectedPurpose: "The image summarizes top domestic and international bucket list destinations.",
-    betterAlt: "Chart comparing top domestic and international bucket list destinations",
+    image: "image/techearningbymin.png",
+    caption: "Image scenario: a bar chart compares revenue per minute for major tech companies.",
+    altText: "graph",
+    visualFocus: "The chart compares revenue per minute across major technology companies.",
+    expectedPurpose: "The image summarizes a revenue comparison.",
+    betterAlt: "Bar chart showing revenue per minute for major tech companies",
     choices: [
       { id: "accessible", label: "Accessible", correct: false },
       { id: "inaccessible", label: "Inaccessible", correct: true }
@@ -690,11 +761,11 @@ const screens = [
     id: "test-5",
     title: "Test 5 (Use)",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/finance_presentation.png",
-    caption: "Image scenario: a presenter explains financial data to a group.",
-    altText: "Presenter explaining financial data to a team",
-    visualFocus: "A presenter points toward financial data on a display.",
-    expectedPurpose: "The image communicates a finance presentation.",
+    image: "image/trading.png",
+    caption: "Image scenario: a trading chart shows price movement, trend lines, and indicators.",
+    altText: "Trading chart showing price movement, trend lines, and technical indicators",
+    visualFocus: "The chart shows candlesticks, trend lines, and technical indicators.",
+    expectedPurpose: "The image communicates market movement and technical analysis.",
     choices: [
       { id: "accessible", label: "Accessible", correct: true },
       { id: "inaccessible", label: "Inaccessible", correct: false }
@@ -705,12 +776,12 @@ const screens = [
     id: "test-6",
     title: "Test 6 (Use)",
     prompt: "Look at the image and alt text. Accessible or inaccessible?",
-    image: "image/trading.png",
-    caption: "Image scenario: a trading chart shows price movement, trend lines, and indicators.",
-    altText: "trading",
-    visualFocus: "The chart shows candlesticks, trend lines, and technical indicators.",
-    expectedPurpose: "The image communicates market movement and technical analysis.",
-    betterAlt: "Trading chart showing price movement, trend lines, and technical indicators",
+    image: "image/bridgeflood.png",
+    caption: "Image scenario: a bridge is closed because of flooding.",
+    altText: "bridge",
+    visualFocus: "The image shows a bridge blocked by signs and surrounded by flood water.",
+    expectedPurpose: "The image warns the user that the bridge is closed because of flooding.",
+    betterAlt: "Bridge closed because of flooding, with warning signs blocking the road",
     choices: [
       { id: "accessible", label: "Accessible", correct: false },
       { id: "inaccessible", label: "Inaccessible", correct: true }
@@ -740,9 +811,7 @@ const screens = [
             <b>${p.correct}</b> / <b>${p.total}</b> (${p.percent}%)
           </p>
 
-          <p class="muted">
-            Practice requirement: <b>85% or higher</b>
-          </p>
+          <p class="muted">Practice requirement: <b>85% or higher</b></p>
 
           <p class="${practicePassed ? "ok" : "no"}">
             ${practicePassed
